@@ -1,10 +1,4 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: Бог-Творец
- * Date: 27.05.2016
- * Time: 9:03
- */
 
 namespace iAvatar777\services\Processing;
 
