@@ -32,7 +32,6 @@ use yii\db\ActiveRecord;
  * Class Wallet
  *
  *
- * @package app\models\Piramida
  */
 class Wallet extends ActiveRecord
 {
@@ -130,10 +129,10 @@ class Wallet extends ActiveRecord
      * увеличивает свой кошелек и сохраняет (операция приход)
      *
      * @param string                              $amount      может быть только положительным
-     * @param \common\models\Piramida\Transaction $transaction транзакция которой принадлежит эта операция
+     * @param Transaction $transaction транзакция которой принадлежит эта операция
      * @param string|null                         $comment     комментарий для операции
      *
-     * @return \common\models\Piramida\Operation
+     * @return Operation
      *
      * @throws \Exception
      */
@@ -166,7 +165,7 @@ class Wallet extends ActiveRecord
      * @param string      $amount  может быть только положительным
      * @param string|null $comment комментарий для операции
      *
-     * @return \common\models\Piramida\Operation
+     * @return Operation
      *
      * @throws \Exception
      */
@@ -206,10 +205,10 @@ class Wallet extends ActiveRecord
      * уменьшает свой кошелек и сохраняет
      *
      * @param float                               $amount      может быть только положительным
-     * @param \common\models\Piramida\Transaction $transaction транзакция которой принадлежит эта операция
+     * @param Transaction $transaction транзакция которой принадлежит эта операция
      * @param string|null                         $comment     комментарий для операции
      *
-     * @return \common\models\Piramida\Operation
+     * @return Operation
      *
      * @throws Exception
      */
@@ -242,7 +241,7 @@ class Wallet extends ActiveRecord
      * @param float       $amount  может быть только положительным
      * @param string|null $comment комментарий для операции
      *
-     * @return \common\models\Piramida\Operation
+     * @return Operation
      *
      * @throws Exception
      */
@@ -285,9 +284,9 @@ class Wallet extends ActiveRecord
      * Добавляет кошельку получателя.
      * Запиcывает трензакционную запись о переводе.
      *
-     * @param int | \common\models\Piramida\Wallet | array $to      int - Идентификатор счета i_am_avatar_prod_wallet.wallet.id
-     *                                                              array - условие поиска в таблице i_am_avatar_prod_wallet.wallet
-     *                                                              \common\models\Piramida\Wallet - счет куда переводить
+     * @param int | Wallet | array $to      int - Идентификатор счета dbWallet.wallet.id
+     *                                                              array - условие поиска в таблице dbWallet.wallet
+     *                                                              Wallet - счет куда переводить
      * @param int                                          $amount                  может быть только положительным
      * @param string | array                               comment  комментарий для перевода. Если строка, то
      *                                                              подразумевается что это один коментарий для трех
@@ -300,7 +299,7 @@ class Wallet extends ActiveRecord
      *                                                              ]
      * @param int                                          $type    тип транзакции
      *
-     * @return \common\models\Piramida\Transaction
+     * @return Transaction
      *
      * @throws \Exception
      */
@@ -311,7 +310,7 @@ class Wallet extends ActiveRecord
         }
         $amount = (int) $amount;
         if (!is_object($to)) $to = self::findOne($to);
-        /** @var \common\models\Piramida\Wallet $to */
+        /** @var Wallet $to */
         if ($to->currency_id != $this->currency_id) throw new Exception('Неверная валюта в кошельке назначения');
         if ($to->is_deleted) throw new Exception('Нельзя перевести монеты на удаленнный кошелек');
         if ($to->id == $this->id) throw new Exception('Нельзя перевести деньги самому себе');
@@ -359,9 +358,9 @@ class Wallet extends ActiveRecord
      * Добавляет кошельку получателя.
      * Запиcывает трензакционную запись о переводе.
      *
-     * @param int | \common\models\Piramida\Wallet | array $to      int - Идентификатор счета i_am_avatar_prod_wallet.wallet.id
-     *                                                              array - условие поиска в таблице i_am_avatar_prod_wallet.wallet
-     *                                                              \common\models\Piramida\Wallet - счет куда переводить
+     * @param int | Wallet | array $to      int - Идентификатор счета dbWallet.wallet.id
+     *                                                              array - условие поиска в таблице dbWallet.wallet
+     *                                                              Wallet - счет куда переводить
      * @param int                                          $amount                  может быть только положительным
      * @param string | array                               comment  комментарий для перевода. Если строка, то
      *                                                              подразумевается что это один коментарий для трех
@@ -376,9 +375,9 @@ class Wallet extends ActiveRecord
      *
      * @return array
      * [
-     *  'transaction'   => '\common\models\piramida\Transaction'
-     *  'operation_add' => '\common\models\Piramida\Operation'
-     *  'operation_sub' => '\common\models\Piramida\Operation'
+     *  'transaction'   => '\iAvatar777\services\Processing\Transaction'
+     *  'operation_add' => '\iAvatar777\services\Processing\Operation'
+     *  'operation_sub' => '\iAvatar777\services\Processing\Operation'
      * ]
      *
      * @throws \Exception
@@ -390,7 +389,7 @@ class Wallet extends ActiveRecord
         }
         $amount = (int) $amount;
         if (!is_object($to)) $to = self::findOne($to);
-        /** @var \common\models\Piramida\Wallet $to */
+        /** @var Wallet $to */
         if ($to->currency_id != $this->currency_id) throw new Exception('Неверная валюта в кошельке назначения');
         if ($to->is_deleted) throw new Exception('Нельзя перевести монеты на удаленнный кошелек');
         if ($to->id == $this->id) throw new Exception('Нельзя перевести деньги самому себе');

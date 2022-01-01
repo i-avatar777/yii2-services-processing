@@ -8,7 +8,6 @@ use cs\services\BitMask;
 use cs\web\Exception;
 use yii\db\ActiveRecord;
 use yii\db\Query;
-use app\models\Piramida\Transaction;
 use yii\helpers\VarDumper;
 
 /**
@@ -34,7 +33,6 @@ use yii\helpers\VarDumper;
  *
  *
  * Class Operation
- * @package app\models\Piramida
  */
 class Operation extends ActiveRecord
 {
@@ -112,7 +110,7 @@ class Operation extends ActiveRecord
         $iAm->id = self::getDb()->lastInsertID;
         $iAm->hash = $iAm->hash();
         $ret = $iAm->save();
-        if (!$ret) throw new \Exception('\common\models\piramida\Operation::add');
+        if (!$ret) throw new \Exception('\iAvatar777\services\Processing\Operation::add');
 
         return $iAm;
     }

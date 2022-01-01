@@ -21,36 +21,6 @@ use yii\helpers\VarDumper;
  */
 class Currency extends ActiveRecord
 {
-    const VVB = 10;
-    const SB = 12;
-    const SBP = 11;
-    const LETM = 10;
-    const MARKET = 10;
-    const LEGAT = 12;
-    const LETN = 11;
-
-    const PZM = 13;
-    const ETH = 14;
-    const USDT = 15;
-
-    const EUR = 20;
-    const RUB = 17;
-    const UAH = 18;
-    const BYN = 19;
-    const INR = 27;
-    const IDR = 28;
-    const CNY = 29;
-
-    const LTC = 21;
-    const BTC = 22;
-    const DASH = 23;
-    const BNB = 24;
-    const NEIRO = 25;
-    const EGOLD = 26;
-    const TRX = 30;
-    const DAI = 31;
-    const LOT = 33;
-    const DOGE = 32;
 
     public static function tableName()
     {
@@ -58,16 +28,16 @@ class Currency extends ActiveRecord
     }
 
     /**
-     * @param int | \common\models\avatar\Currency $id
+     * @param int | Currency $id
      *
-     * @return \common\models\piramida\Currency
+     * @return Currency
      */
     public static function getFromExt($id)
     {
-        /** @var \common\models\avatar\Currency $c */
+        /** @var Currency $c */
         $c = null;
-        if (!($id instanceof \common\models\avatar\Currency)) {
-            $c = \common\models\avatar\Currency::findOne($id);
+        if (!($id instanceof Currency)) {
+            $c = Currency::findOne($id);
         } else {
             $c = $id;
         }
@@ -79,16 +49,16 @@ class Currency extends ActiveRecord
 
     /**
      * @param int $value
-     * @param int | \common\models\piramida\Currency $id
+     * @param int | Currency $id
      *
      * @return float
      */
     public static function getValueFromAtom($value, $id)
     {
-        /** @var \common\models\piramida\Currency $c */
+        /** @var Currency $c */
         $c = null;
-        if (!($id instanceof \common\models\piramida\Currency)) {
-            $c = \common\models\piramida\Currency::findOne($id);
+        if (!($id instanceof Currency)) {
+            $c = Currency::findOne($id);
         } else {
             $c = $id;
         }
@@ -96,7 +66,7 @@ class Currency extends ActiveRecord
     }
 
     /**
-     * @param int | \common\models\avatar\Currency $id
+     * @param int | Currency $id
      *
      * @return self
      * @throws
@@ -104,7 +74,7 @@ class Currency extends ActiveRecord
     public static function initFromCurrencyExt($id)
     {
         $id1 = null;
-        if ($id instanceof \common\models\avatar\Currency) {
+        if ($id instanceof Currency) {
             $id1 = $id->id;
         } else {
             if (Application::isInteger($id)) {
@@ -121,19 +91,19 @@ class Currency extends ActiveRecord
 
     /**
      * @param float $value
-     * @param int | \common\models\piramida\Currency $id
+     * @param int | Currency $id
      *
      * @return int
      */
     public static function getAtomFromValue($value, $id)
     {
-        /** @var \common\models\piramida\Currency $c */
+        /** @var Currency $c */
         $c = null;
-        if ($id instanceof \common\models\piramida\Currency) {
+        if ($id instanceof Currency) {
             $c = $id;
         } else {
             if (Application::isInteger($id)) {
-                $c = \common\models\piramida\Currency::findOne($id);
+                $c = Currency::findOne($id);
             } else {
                 throw new \Exception('Не верно задан параметр');
             }
@@ -151,9 +121,9 @@ class Currency extends ActiveRecord
      */
     public static function convertAtom($value, $from, $to)
     {
-        /** @var \common\models\piramida\Currency $from */
-        $fromObject = \common\models\piramida\Currency::findOne($from);
-        $toObject = \common\models\piramida\Currency::findOne($to);
+        /** @var Currency $from */
+        $fromObject = Currency::findOne($from);
+        $toObject = Currency::findOne($to);
         if ($fromObject->decimals == $toObject->decimals) {
             return  $value;
         }

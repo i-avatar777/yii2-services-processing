@@ -41,7 +41,7 @@ class Login extends ActiveRecord
     {
         $iAm = new self($fields);
         $ret = $iAm->save();
-        if (!$ret) throw new \Exception('\common\models\piramida\Login::add');
+        if (!$ret) throw new \Exception('\iAvatar777\services\Processing\Login::add');
         $iAm->id = self::getDb()->lastInsertID;
 
         return $iAm;

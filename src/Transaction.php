@@ -97,7 +97,7 @@ class Transaction extends ActiveRecord
         $iAm->id = self::getDb()->lastInsertID;
         $iAm->hash = $iAm->hash();
         $ret = $iAm->save();
-        if (!$ret) throw new \Exception('\common\models\piramida\Transaction::add');
+        if (!$ret) throw new \Exception('\iAvatar777\services\Processing\Transaction::add');
 
         return $iAm;
     }
