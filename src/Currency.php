@@ -16,8 +16,6 @@ use yii\helpers\VarDumper;
  * @property string address
  * @property int    amount
  * @property int    decimals
- * @property int    decimals_view
- * @property int    decimals_view_shop
  */
 class Currency extends ActiveRecord
 {
@@ -169,7 +167,6 @@ class Currency extends ActiveRecord
             ], 'required'],
             [[
                 'decimals',
-                'decimals_view',
                 'amount',
             ], 'integer'],
             ['code', 'string', 'max' => 10],
