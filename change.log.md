@@ -1,3 +1,6 @@
+0.0.5
+- Исправлено использование класса Application
+
 0.0.4
 - Исправлен список полей в классе `\iAvatar777\services\Processing\Currency`
 

@@ -73,10 +73,40 @@ class Transaction extends ActiveRecord
         ];
     }
 
+    /**
+     * @param int|double|string $value
+     *
+     * @return bool
+     */
+    public static function isDouble($value)
+    {
+        if (is_integer($value)) return true;
+        if (self::isInteger($value)) return true;
+        if (preg_match('/[0-9-.]/', $value)) return true;
+
+        return false;
+    }
+
+
+    /**
+     * @param $value
+     *
+     * @return bool
+     */
+    public static function isInteger($value)
+    {
+        if (is_integer($value)) return true;
+        if (is_array($value)) return false;
+        if (preg_match('/[0-9-]/', $value)) return true;
+
+        return false;
+    }
+
+
     public function validateAmount($a, $p)
     {
         if (!$this->hasErrors()) {
-            if (!Application::isDouble($this->amount)) {
+            if (!self::isDouble($this->amount)) {
                 $this->addError($a, 'Это не Double');
                 return;
             }
