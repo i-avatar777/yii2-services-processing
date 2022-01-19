@@ -100,7 +100,7 @@ class Currency extends ActiveRecord
         if ($id instanceof Currency) {
             $c = $id;
         } else {
-            if (Application::isInteger($id)) {
+            if (self::isInteger($id)) {
                 $c = Currency::findOne($id);
             } else {
                 throw new \Exception('Не верно задан параметр');
@@ -108,6 +108,20 @@ class Currency extends ActiveRecord
         }
 
         return bcmul($value, pow(10, $c->decimals));
+    }
+
+    /**
+     * @param $value
+     *
+     * @return bool
+     */
+    public static function isInteger($value)
+    {
+        if (is_integer($value)) return true;
+        if (is_array($value)) return false;
+        if (preg_match('/[0-9-]/', $value)) return true;
+
+        return false;
     }
 
     /**
