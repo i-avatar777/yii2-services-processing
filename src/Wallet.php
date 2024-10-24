@@ -137,34 +137,20 @@ class Wallet extends ActiveRecord
      * увеличивает свой кошелек и сохраняет
      *
      * @param float                               $amount      может быть только положительным
-     * @param \common\models\Piramida\Transaction $transaction транзакция которой принадлежит эта операция
+     * @param Transaction                         $transaction транзакция которой принадлежит эта операция
      * @param string|null                         $comment     комментарий для операции
      *
-     * @return \common\models\Piramida\Operation
      *
      * @throws \Exception
      */
     public function add($amount, $transaction, $comment = null)
     {
         if ($amount < 0) throw new Exception('Нельзя прибавлять отрицательную сумму');
-        $before       = $this->amount;
         $this->amount += $amount;
-        $after        = $this->amount;
         $res          = $this->save();
-        \Yii::info(\yii\helpers\VarDumper::dumpAsString([$res, $this->errors]), 'wallet\\wallet\\add');
-        $fields = [
-            'wallet_id'      => $this->id,
-            'type'           => Operation::TYPE_IN,
-            'datetime'       => microtime(true),
-            'before'         => $before,
-            'after'          => $after,
-            'amount'         => $amount,
-            'transaction_id' => $transaction->id,
-        ];
-        if ($comment) $fields['comment'] = $comment;
-        $o = Operation::add($fields);
 
-        return $o;
+
+        return $res;
     }
 
     /**
@@ -173,7 +159,7 @@ class Wallet extends ActiveRecord
      * @param float       $amount  может быть только положительным
      * @param string|null $comment комментарий для операции
      *
-     * @return \common\models\Piramida\Operation
+     * @return Transaction
      *
      * @throws \Exception
      */
@@ -192,7 +178,9 @@ class Wallet extends ActiveRecord
         $transaction = \Yii::$app->db->beginTransaction();
         try {
             if ($comment) $fields['comment'] = $comment;
-            $o = Transaction::add($fields);
+            $t = Transaction::add($fields);
+
+            $this->add($amount, $t, '');
 
             $currency = $this->getCurrency();
             $currency->amount += $amount;
@@ -203,17 +191,16 @@ class Wallet extends ActiveRecord
             throw $e;
         }
 
-        return $o;
+        return $t;
     }
 
     /**
      * уменьшает свой кошелек и сохраняет
      *
      * @param float                               $amount      может быть только положительным
-     * @param \common\models\Piramida\Transaction $transaction транзакция которой принадлежит эта операция
+     * @param Transaction $transaction транзакция которой принадлежит эта операция
      * @param string|null                         $comment     комментарий для операции
      *
-     * @return \common\models\Piramida\Operation
      *
      * @throws Exception
      */
@@ -221,23 +208,10 @@ class Wallet extends ActiveRecord
     {
         if ($amount < 0) throw new Exception('Нельзя вычитать отрицательную сумму');
         if ($this->amount < $amount) throw new Exception('Попытка снять денег больше чем есть на счету');
-        $before       = $this->amount;
         $this->amount -= $amount;
-        $after        = $this->amount;
-        $this->save();
-        $fields = [
-            'wallet_id'      => $this->id,
-            'type'           => Operation::TYPE_OUT,
-            'datetime'       => microtime(true),
-            'before'         => $before,
-            'after'          => $after,
-            'amount'         => $amount,
-            'transaction_id' => $transaction->id,
-        ];
-        if ($comment) $fields['comment'] = $comment;
-        $o = Operation::add($fields);
 
-        return $o;
+
+        return $this->save();
     }
 
     /**
@@ -246,7 +220,7 @@ class Wallet extends ActiveRecord
      * @param float       $amount  может быть только положительным
      * @param string|null $comment комментарий для операции
      *
-     * @return \common\models\Piramida\Transaction
+     * @return Transaction
      *
      * @throws Exception
      */
@@ -266,7 +240,9 @@ class Wallet extends ActiveRecord
         $transaction = \Yii::$app->db->beginTransaction();
         try {
             if ($comment) $fields['comment'] = $comment;
-            $o = Transaction::add($fields);
+            $t = Transaction::add($fields);
+
+            $this->sub($amount, $t, '');
 
             $currency = $this->getCurrency();
             $currency->amount -= $amount;
@@ -277,7 +253,7 @@ class Wallet extends ActiveRecord
             throw $e;
         }
 
-        return $o;
+        return $t;
     }
 
     /**
@@ -286,7 +262,7 @@ class Wallet extends ActiveRecord
      * Добавляет кошельку получателя.
      * Запиcывает трензакционную запись о переводе.
      *
-     * @param int | \common\models\Piramida\Wallet | array $to      int - Идентификатор счета i_am_avatar_prod_wallet.wallet.id
+     * @param int | Wallet | array $to      int - Идентификатор счета i_am_avatar_prod_wallet.wallet.id
      *                                                              array - условие поиска в таблице i_am_avatar_prod_wallet.wallet
      *                                                              \common\models\Piramida\Wallet - счет куда переводить
      * @param int                                          $amount                  может быть только положительным
@@ -301,7 +277,7 @@ class Wallet extends ActiveRecord
      *                                                              ]
      * @param int                                          $type    тип транзакции
      *
-     * @return \common\models\Piramida\Transaction
+     * @return Transaction
      *
      * @throws \Exception
      */
@@ -311,7 +287,7 @@ class Wallet extends ActiveRecord
             throw new Exception('Нельзя перевести деньги из удаленного кошелька');
         }
         if (!is_object($to)) $to = self::findOne($to);
-        /** @var \common\models\Piramida\Wallet $to */
+        /** @var Wallet $to */
         if ($to->currency_id != $this->currency_id) throw new Exception('Неверная валюта в кошельке назначения');
         if ($to->is_deleted) throw new Exception('Нельзя перевести монеты на удаленнный кошелек');
         if ($to->id == $this->id) throw new Exception('Нельзя перевести деньги самому себе');
@@ -338,6 +314,9 @@ class Wallet extends ActiveRecord
             }
             $t = Transaction::add($fields);
 
+            $this->sub($amount, $t, '');
+            $to->add($amount, $t, '');
+
             $transaction->commit();
         } catch (\Exception $e) {
             $transaction->rollBack();
@@ -348,89 +327,8 @@ class Wallet extends ActiveRecord
         return $t;
     }
 
-    /**
-     * Осуществляет элементарную операцию движения средств с созданием транзакции.
-     * Вычитает с кошелька источника.
-     * Добавляет кошельку получателя.
-     * Запиcывает трензакционную запись о переводе.
-     *
-     * @param int | \common\models\Piramida\Wallet | array $to      int - Идентификатор счета i_am_avatar_prod_wallet.wallet.id
-     *                                                              array - условие поиска в таблице i_am_avatar_prod_wallet.wallet
-     *                                                              \common\models\Piramida\Wallet - счет куда переводить
-     * @param int                                          $amount                  может быть только положительным
-     * @param string | array                               comment  комментарий для перевода. Если строка, то
-     *                                                              подразумевается что это один коментарий для трех
-     *                                                              типов, иначе в массиве можно указать разные
-     *                                                              комментарии для трех типов комментариев
-     *                                                              [
-     *                                                              'from'        => string
-     *                                                              'to'          => string
-     *                                                              'transaction' => string
-     *                                                              ]
-     * @param int                                          $type    тип транзакции
-     *
-     * @return array
-     * [
-     *  'transaction'   => '\common\models\piramida\Transaction'
-     * ]
-     *
-     * @throws \Exception
-     */
-    public function move2($to, $amount, $comment = null, $type = null)
-    {
-        if ($this->is_deleted) {
-            throw new Exception('Нельзя перевести деньги из удаленного кошелька');
-        }
-        if (!is_object($to)) $to = self::findOne($to);
-        /** @var \common\models\Piramida\Wallet $to */
-        if ($to->currency_id != $this->currency_id) throw new Exception('Неверная валюта в кошельке назначения');
-        if ($to->is_deleted) throw new Exception('Нельзя перевести монеты на удаленнный кошелек');
-        if ($to->id == $this->id) throw new Exception('Нельзя перевести деньги самому себе');
-        if ($amount == 0) throw new Exception('Нельзя перевести 0');
-        if (bccomp($amount, 0) == -1) throw new Exception('Нельзя перевести отрицательную сумму');
-        if (bccomp($this->amount, $amount) == -1) throw new Exception('Попытка снять денег больше чем есть на счету');
-
-        $transaction = \Yii::$app->db->beginTransaction();
-        try {
-            // делаю перевод
-            $fields = [
-                'from'      => $this->id,
-                'to'        => $to->id,
-                'amount'    => $amount,
-                'type'      => $type,
-            ];
-            if (is_array($comment)) {
-                $commentTransaction = $comment['transaction'];
-            } else {
-                $commentTransaction = $comment;
-            }
-            if ($commentTransaction) {
-                $fields['comment'] = $commentTransaction;
-            }
-            $t = Transaction::add($fields);
-
-            $transaction->commit();
-        } catch (\Exception $e) {
-            $transaction->rollBack();
-
-            throw $e;
-        }
-
-        return [
-            'transaction' => $t,
-        ];
-    }
-
-
     public function delete()
     {
-        if ($this->amount > 0) {
-            // Перевожу на дежурный кошелек
-            $defaultWallet = WalletDefault::findOne(['currency_id' => $this->currency_id]);
-            if (is_null($defaultWallet)) throw new Exception('Нет кошелька по умолчанию');
-            $this->move($defaultWallet->wallet_id, $this->amount, 'Возврат вследствии удаления кошелька');
-        }
-
         $this->is_deleted = 1;
         $this->save();
 
